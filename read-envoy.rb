@@ -11,7 +11,7 @@ production_data=parsed_data['production'][0]
 active_count=production_data['activeCount']
 watts_now=production_data['wNow']
 
-exit unless active_count==0 || watts_now==0
+exit unless active_count<INVERTER_COUNT || watts_now==0
 gmail = Gmail.new(USERNAME, PASSWORD) do |gmail|
   gmail.deliver do
     to TO_EMAIL
