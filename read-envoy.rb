@@ -27,10 +27,12 @@ tz=TZInfo::Timezone.get(TZ)
 sunrise = tz.to_local(sec.compute_utc_official_sunrise)
 sunset = tz.to_local(sec.compute_utc_official_sunset)
 time_now = tz.to_local(DateTime.now)
+production_down = active_count < INVERTER_COUNT || watts_now==0
+should_alert = time_now > sunrise && time_now < sunset
 
-exit unless active_count < INVERTER_COUNT || watts_now==0
+exit unless production_down
 
-if time_now > sunrise && time_now < sunset
+if should_alert
   client.sms.send(
     from: NEXMO_SMS_FROM,
     to: NEXMO_SMS_TO,
@@ -41,7 +43,7 @@ end
 Gmail.new(USERNAME, PASSWORD) do |gmail|
   gmail.deliver do
     to TO_EMAIL
-    subject "#{production_data['activeCount']} inverters, #{production_data['wNow']} watts"
+    subject "#{should_alert ? '🔴':'✅'}#{production_data['activeCount']} inverters, #{production_data['wNow']} watts"
     text_part do
       body data
     end
